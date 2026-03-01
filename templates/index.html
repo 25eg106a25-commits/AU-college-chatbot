@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>AU Buddy - College Assistant</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #4c51bf;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #chatbox {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f7f7f7;
+        }
+
+        .message {
+            margin: 8px 0;
+            padding: 10px 14px;
+            border-radius: 20px;
+            max-width: 75%;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .user {
+            background: #4c51bf;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot {
+            background: #e2e8f0;
+            color: black;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 10px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        button {
+            margin-left: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #4c51bf;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #3c41a5;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="chat-container">
+    <div class="header">
+        AU Buddy 🤖
+    </div>
+
+    <div id="chatbox"></div>
+
+    <div class="input-area">
+        <input type="text" id="message" placeholder="Ask about placements, academics...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+async function sendMessage() {
+
+    const messageInput = document.getElementById("message");
+    const chatbox = document.getElementById("chatbox");
+    const message = messageInput.value.trim();
+
+    if (message === "") return;
+
+    const userDiv = document.createElement("div");
+    userDiv.className = "message user";
+    userDiv.innerText = message;
+    chatbox.appendChild(userDiv);
+
+    messageInput.value = "";
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    // Typing indicator
+    const typingDiv = document.createElement("div");
+    typingDiv.className = "message bot";
+    typingDiv.innerText = "Typing...";
+    chatbox.appendChild(typingDiv);
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    try {
+        const response = await fetch("http://127.0.0.1:8001/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                user_message: message
+            })
+        });
+
+        const data = await response.json();
+
+        typingDiv.innerText = data.bot_reply;
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+    } catch (error) {
+        typingDiv.innerText = "Error connecting to server.";
+    }
+}
+
+// Enter key support
+document.getElementById("message").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        sendMessage();
+    }
+});
+</script>
+
+</body>
+</html>
